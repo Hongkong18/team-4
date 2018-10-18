@@ -1,0 +1,25 @@
+{{define "institutionView"}}
+{{/*<div class="result-container">*/}}
+{{/*<div class="text-truncate">*/}}
+{{/*<a class="result-title">{{.Name}}</a>*/}}
+{{/*<br>*/}}
+{{/*<span class="result-meta"><b>Location: </b>{{.Location}}</span>*/}}
+{{/*<br>*/}}
+{{/*<span class="result-meta"><b>Speciality: </b>{{.Speciality}} bytes</span>*/}}
+{{/*<br>*/}}
+{{/*<p class="result-meta">{{.Description}}</p>*/}}
+{{/*<br>*/}}
+{{/*</div>*/}}
+{{/*</div>*/}}
+
+<div class="card" style="width: 35rem;">
+    <div class="card-body">
+        <h5 class="card-title">{{.Name}}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">{{.Location}}</h6>
+        <p class="card-text">{{.Description}}</p>
+        <a href="#" class="card-link">{{.Speciality}}</a>
+        <a href="#" class="card-link">{{.Contact}}</a>
+    </div>
+</div>
+<br>
+{{end}}
