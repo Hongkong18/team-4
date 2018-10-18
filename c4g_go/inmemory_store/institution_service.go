@@ -8,21 +8,18 @@ import (
 type InstitutionService struct {
 	InvIndex     models.InvertedIndex
 	institutions map[int64]*models.Institution
+	list         []*models.Institution
 	latestId     int64
 }
 
 func NewInstitutionService(invIndex models.InvertedIndex) *InstitutionService {
 	ins := make(map[int64]*models.Institution)
-	return &InstitutionService{InvIndex: invIndex, institutions: ins, latestId: 0}
+	list := make([]*models.Institution, 0)
+	return &InstitutionService{InvIndex: invIndex, institutions: ins, latestId: 0, list: list}
 }
 
 func (i *InstitutionService) ListAll() []*models.Institution {
-	rv := make([]*models.Institution, 0)
-	for _, v := range i.institutions {
-		rv = append(rv, v)
-	}
-
-	return rv
+	return i.list
 }
 
 func (i *InstitutionService) GetById(id int64) *models.Institution {
@@ -32,6 +29,7 @@ func (i *InstitutionService) GetById(id int64) *models.Institution {
 func (i *InstitutionService) Insert(ins models.Institution) {
 	i.latestId = i.latestId + 1
 	i.institutions[i.latestId] = &ins
+	i.list = append(i.list, &ins)
 
 	wordbag := make([]string, 0)
 	wordbag = append(wordbag, strings.Split(ins.Name, " ")...)

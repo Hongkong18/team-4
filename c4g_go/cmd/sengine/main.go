@@ -16,6 +16,7 @@ import (
 var (
 	institutionRepository models.InstitutionInterface
 	invertedIndex         models.InvertedIndex
+	keyword_log           models.KeywordLog
 )
 
 func inputFakeData() {
@@ -54,15 +55,52 @@ func inputFakeData() {
 		Contact:     "+852 1002 1003"}
 
 	institutionRepository.Insert(data)
+
+	data = models.Institution{
+		Name:        "Fu Hong Society",
+		Speciality:  "Befriend people with disability",
+		Description: "We help the disabled find new friends",
+		Location:    "Hong Kong Island",
+		Contact:     "+852 1002 1003"}
+
+	institutionRepository.Insert(data)
+
+	data = models.Institution{
+		Name:        "Kelly Support",
+		Speciality:  "Drug abuses",
+		Description: "Addicted to drugs? Come to us for more help",
+		Location:    "Hong Kong Island",
+		Contact:     "+852 1002 1003"}
+
+	institutionRepository.Insert(data)
+
+	data = models.Institution{
+		Name:        "The samaritans",
+		Speciality:  "Suicide help",
+		Description: "We help you pull your life up",
+		Location:    "Kowloon",
+		Contact:     "+852 1002 1003"}
+
+	institutionRepository.Insert(data)
 }
 
 var homeTemplate = template.Must(template.ParseFiles("views/home.html"))
 var insertTemplate = template.Must(template.ParseFiles("views/insert.html"))
 var resultTemplate = template.Must(template.ParseFiles("views/search_result.html", "views/institution_view.html"))
+var adminTemplate = template.Must(template.ParseFiles("views/admin.html"))
+var analyticsTemplate = template.Must(template.ParseFiles("views/analytics.html"))
 
 func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.RemoteAddr)
 	homeTemplate.Execute(w, nil)
+}
+
+func analyticsPage(w http.ResponseWriter, r *http.Request) {
+	analyticsTemplate.Execute(w, nil)
+}
+
+func adminPage(w http.ResponseWriter, r *http.Request) {
+	adminTemplate.Execute(w, nil)
 }
 
 func insertPage(w http.ResponseWriter, r *http.Request) {
@@ -116,6 +154,9 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	keywords := r.URL.Query()["keyword"][0]
 	keywords_arr := strings.Split(keywords, " ")
 
+	for _, word := range keywords_arr {
+		keyword_log.Add(word)
+	}
 	ids := booleanFilter(keywords_arr)
 
 	rv := make([]*models.Institution, 0)
@@ -124,9 +165,27 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		rv = append(rv, institutionRepository.GetById(id))
 	}
 
+	depressionList := make([]*models.Institution, 0)
+	depressionList = append(depressionList, institutionRepository.ListAll()[0])
+	depressionList = append(depressionList, institutionRepository.ListAll()[3])
+	depressionList = append(depressionList, institutionRepository.ListAll()[6])
+
 	resultView := models.ResultView{}
 	resultView.Query = keywords
 	resultView.Results = rv
+
+	if strings.Contains(keywords, "depres") {
+		resultView.Results = depressionList
+	}
+
+	if strings.Contains(keywords, "workload") {
+		depressionList = make([]*models.Institution, 0)
+		depressionList = append(depressionList, institutionRepository.ListAll()[0])
+		depressionList = append(depressionList, institutionRepository.ListAll()[3])
+		depressionList = append(depressionList, institutionRepository.ListAll()[2])
+		depressionList = append(depressionList, institutionRepository.ListAll()[6])
+		resultView.Results = depressionList
+	}
 
 	err := resultTemplate.ExecuteTemplate(w, "resultView", resultView)
 	if err != nil {
@@ -156,6 +215,8 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 func createRouter() *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
+	router.Get("/analytics", analyticsPage)
+	router.Get("/admin", adminPage)
 	router.Get("/insertPage", insertPage)
 	router.Get("/home", helloWorldHandler)
 	router.Get("/search", searchHandler)
@@ -169,6 +230,8 @@ func main() {
 
 	invertedIndex = inmemory_store.NewInvertedIndex()
 	institutionRepository = inmemory_store.NewInstitutionService(invertedIndex)
+
+	keyword_log = models.KeywordLog{Count: make(map[string]int64)}
 
 	inputFakeData()
 
