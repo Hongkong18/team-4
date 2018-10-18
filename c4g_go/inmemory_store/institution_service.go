@@ -16,10 +16,6 @@ func NewInstitutionService(invIndex models.InvertedIndex) *InstitutionService {
 	return &InstitutionService{InvIndex: invIndex, institutions: ins, latestId: 0}
 }
 
-//GetById(id int64) *Institution
-//Insert() *Institution
-//Update(id int64, ins *Institution)
-
 func (i *InstitutionService) ListAll() []*models.Institution {
 	rv := make([]*models.Institution, 0)
 	for _, v := range i.institutions {
@@ -33,9 +29,9 @@ func (i *InstitutionService) GetById(id int64) *models.Institution {
 	return i.institutions[id]
 }
 
-func (i *InstitutionService) Insert(ins *models.Institution) {
+func (i *InstitutionService) Insert(ins models.Institution) {
 	i.latestId = i.latestId + 1
-	i.institutions[i.latestId] = ins
+	i.institutions[i.latestId] = &ins
 
 	wordbag := make([]string, 0)
 	wordbag = append(wordbag, strings.Split(ins.Name, " ")...)

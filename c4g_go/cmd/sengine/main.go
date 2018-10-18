@@ -19,11 +19,46 @@ var (
 )
 
 func inputFakeData() {
+	data := models.Institution{
+		Name:        "Depression Inc",
+		Speciality:  "Depression Help",
+		Description: "We provide one-on-one help for people suffering from crippling depression",
+		Location:    "Hong Kong",
+		Contact:     "+852 1002 1003"}
 
+	institutionRepository.Insert(data)
+
+	data = models.Institution{
+		Name:        "Autism Inc",
+		Speciality:  "Autism Help",
+		Description: "We provide one-on-one help for people suffering from crippling autism",
+		Location:    "Hong Kong",
+		Contact:     "+852 1002 1003"}
+
+	institutionRepository.Insert(data)
+
+	data = models.Institution{
+		Name:        "Anxiety Inc",
+		Speciality:  "Anxiety Help",
+		Description: "We provide one-on-one help for people suffering from crippling anxiety",
+		Location:    "Hong Kong",
+		Contact:     "+852 1002 1003"}
+
+	institutionRepository.Insert(data)
+
+	data = models.Institution{
+		Name:        "Stress Inc",
+		Speciality:  "Stress Help",
+		Description: "We provide one-on-one help for people suffering from crippling stress",
+		Location:    "Hong Kong",
+		Contact:     "+852 1002 1003"}
+
+	institutionRepository.Insert(data)
 }
 
 var homeTemplate = template.Must(template.ParseFiles("views/home.html"))
 var insertTemplate = template.Must(template.ParseFiles("views/insert.html"))
+var resultTemplate = template.Must(template.ParseFiles("views/search_result.html", "views/institution_view.html"))
 
 func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.RemoteAddr)
@@ -89,13 +124,20 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		rv = append(rv, institutionRepository.GetById(id))
 	}
 
-	json.NewEncoder(w).Encode(rv)
+	resultView := models.ResultView{}
+	resultView.Query = keywords
+	resultView.Results = rv
+
+	err := resultTemplate.ExecuteTemplate(w, "resultView", resultView)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func insertHandler(w http.ResponseWriter, r *http.Request) {
 	var data models.Institution
 	json.NewDecoder(r.Body).Decode(&data)
-	institutionRepository.Insert(&data)
+	institutionRepository.Insert(data)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -105,8 +147,10 @@ func verifyHandler(w http.ResponseWriter, r *http.Request) {
 
 func listHandler(w http.ResponseWriter, r *http.Request) {
 	lists := institutionRepository.ListAll()
-	json.NewEncoder(w).Encode(lists)
-	w.WriteHeader(http.StatusOK)
+	resultView := models.ResultView{}
+	resultView.Results = lists
+	resultView.Query = "All Institutions"
+	resultTemplate.ExecuteTemplate(w, "resultView", resultView)
 }
 
 func createRouter() *chi.Mux {
@@ -125,6 +169,8 @@ func main() {
 
 	invertedIndex = inmemory_store.NewInvertedIndex()
 	institutionRepository = inmemory_store.NewInstitutionService(invertedIndex)
+
+	inputFakeData()
 
 	log.Println("Starring serach engine backend")
 	log.Fatal(http.ListenAndServe(":8080", createRouter()))
