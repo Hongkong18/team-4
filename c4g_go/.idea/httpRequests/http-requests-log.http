@@ -1,0 +1,44 @@
+POST http://localhost:8080/insert
+
+{
+"name":"Haha Help",
+"speciality":"autism",
+"location":"HK",
+"description":"help with depression"
+}
+
+###
+
+POST http://localhost:8080/insert
+
+{
+"name":"Haha Help",
+"speciality":"depression",
+"location":"HK",
+"description":"help with depression"
+}
+
+###
+
+POST http://localhost:8080/insert
+
+{
+"name":"Haha Help",
+"speciality":"depression",
+"location":"HK",
+"description":"help with depression"
+}
+
+###
+
+POST http://localhost:8080/insert
+
+{
+"name":"Depression Help",
+"speciality":"depression",
+"location":"HK",
+"description":"help with depression"
+}
+
+###
+
